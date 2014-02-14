@@ -32,8 +32,13 @@ namespace _2_1_Galleriet.Model
         }
 
         public bool ImageExists(string name) {
-
-            throw new NotImplementedException();
+            if (File.Exists(PhysicalUploadImagePath + name))
+            {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
 
         private bool IsValidImage(Image image) {
@@ -59,23 +64,30 @@ namespace _2_1_Galleriet.Model
             if (!IsValidImage(image)) 
             {
                 throw new ArgumentOutOfRangeException();
+            }                           
+
+            // rensa filnamnet från otillåtna tecken
+            fileName = SanitizePath.Replace(fileName, "");
+
+            // kontrollera om bilden redan finns
+            // om den finns ändra fileName och prova igen
+            string noExtension = Path.GetFileNameWithoutExtension(fileName);
+
+            int ext = 0;
+            while (ImageExists(fileName))
+            {
+                fileName = string.Format(noExtension + "({0})" + "{1}", ext, Path.GetExtension(fileName));
+                ext = ext + 1;
             }
+            
 
             // om filändelsen inte är korrekt (gif, jpg eller png), kastas ett undantag
             string path = PhysicalUploadImagePath + fileName;
 
-            if (!ApprovedExtensions.Match(path).Success) {
+            if (!ApprovedExtensions.Match(path).Success)
+            {
                 throw new ArgumentOutOfRangeException();
             }
-                
-
-            // rensa sökvägen från otillåtna tecken
-            path = SanitizePath.Replace(path, "");
-
-            // kontrollera om bilden redan finns
-
-            
-
             
             image.Save(path);
 
